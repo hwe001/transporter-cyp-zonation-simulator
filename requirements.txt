@@ -1,0 +1,5 @@
+# model.py itself is dependency-free (pure Python standard library).
+# numpy and matplotlib are required only for the vectorized sensitivity
+# suite (sensitivity_suite.py) and the figure-generation scripts.
+numpy>=1.24
+matplotlib>=3.7

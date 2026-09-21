@@ -7,12 +7,13 @@ from model import simulate, cv_pv_ratio, N, xs
 
 plt.rcParams.update({"font.size": 10, "font.family": "DejaVu Sans"})
 
-fig = plt.figure(figsize=(13.6, 8.6))
-gs = fig.add_gridspec(2, 2, height_ratios=[1, 1.15], wspace=0.32, hspace=0.42)
-axA = fig.add_subplot(gs[0, 0])
-axB = fig.add_subplot(gs[0, 1])
-axC = fig.add_subplot(gs[1, 0])
-axD = fig.add_subplot(gs[1, 1])
+fig = plt.figure(figsize=(14.0, 8.6))
+gs = fig.add_gridspec(2, 6, height_ratios=[1, 1.15], wspace=0.9, hspace=0.42)
+axA = fig.add_subplot(gs[0, 0:2])
+axB = fig.add_subplot(gs[0, 2:4])
+axC = fig.add_subplot(gs[0, 4:6])
+axD = fig.add_subplot(gs[1, 0:3])
+axE = fig.add_subplot(gs[1, 3:6])
 
 # ---------------- Panel A: schematic ----------------
 axA.set_xlim(0, 10); axA.set_ylim(-0.3, 4.3); axA.axis("off")
@@ -81,7 +82,7 @@ plot_grid(axB, grid_Ch, "Parent (hepatocyte Ch) CV:PV", "RdBu_r")
 axC.set_title("C", loc="left", fontweight="bold", x=-0.24)
 plot_grid(axC, grid_Cm, "Metabolite (hepatocyte Cm) CV:PV", "PRGn")
 
-# ---------------- Panel D: DDI discrimination, flat transporter + pericentral CYP ----------------
+# ---------------- Panels D/E: DDI discrimination, split into two single-axis panels ----------------
 dig_doses = [0, 0.3, 0.6, 1.0, 1.5, 2.4, 4.0]
 inh_doses = [0, 0.6, 1.2, 2.0, 3.0, 5.0, 8.0]
 
@@ -95,26 +96,39 @@ for d in inh_doses:
     r = simulate("flat", "pericentral", fm=0.5, cyp_inh_uM=d, t_end_min=15.0)
     ch_inh.append(cv_pv_ratio(r["Ch"])); cm_inh.append(cv_pv_ratio(r["Cm"]))
 
-axD.set_title("D", loc="left", fontweight="bold", x=-0.16)
-ax2 = axD.twinx()
-l1, = axD.plot(range(len(dig_doses)), [c/ch_dig[0] for c in ch_dig], "o-", color="#2a78d6",
-                label="Parent CV:PV (transporter-inhib.)", ms=6, mfc="white", mew=1.6)
-l2, = axD.plot(range(len(dig_doses)), [c/ch_inh[0] for c in ch_inh], "s--", color="#eb6834",
-                label="Parent CV:PV (CYP-inhib.)", ms=6, mfc="white", mew=1.6)
-l3, = ax2.plot(range(len(dig_doses)), [c/cm_dig[0] for c in cm_dig], "^-", color="#2a78d6",
-                alpha=0.5, label="Metabolite CV:PV (transporter-inhib.)", ms=6)
-l4, = ax2.plot(range(len(dig_doses)), [c/cm_inh[0] for c in cm_inh], "v--", color="#eb6834",
-                alpha=0.5, label="Metabolite CV:PV (CYP-inhib.)", ms=6)
-axD.set_xticks(range(len(dig_doses)))
-axD.set_xticklabels([f"dose {k}" for k in range(len(dig_doses))], fontsize=7)
-axD.set_xlabel("Perpetrator dose level (arbitrary steps)")
-axD.set_ylabel("Parent CV:PV\n(fraction of no-perpetrator)")
-ax2.set_ylabel("Metabolite CV:PV\n(fraction of no-perpetrator)")
-axD.spines[['top']].set_visible(False)
-lines = [l1, l2, l3, l4]
-axD.legend(lines, [l.get_label() for l in lines], fontsize=6.3, frameon=False, loc="upper left")
-axD.text(0.98, 0.03, "transporter=flat, CYP=pericentral", transform=axD.transAxes,
-          ha="right", fontsize=6.5, color="#666", style="italic")
+ch_dig_pct = [100*c/ch_dig[0] for c in ch_dig]
+cm_dig_pct = [100*c/cm_dig[0] for c in cm_dig]
+ch_inh_pct = [100*c/ch_inh[0] for c in ch_inh]
+cm_inh_pct = [100*c/cm_inh[0] for c in cm_inh]
+y_all = ch_dig_pct + cm_dig_pct + ch_inh_pct + cm_inh_pct
+ylim = (0, max(y_all)*1.15)
+
+def plot_ddi_panel(ax, doses, ch_pct, cm_pct, title, panel_letter, xlabel):
+    ax.plot(range(len(doses)), ch_pct, "o-", color="#2a78d6", label="Parent (Ch) CV:PV", ms=6, mfc="white", mew=1.6)
+    ax.plot(range(len(doses)), cm_pct, "s--", color="#7a4fa8", label="Metabolite (Cm) CV:PV", ms=6, mfc="white", mew=1.6)
+    ax.annotate(f"{ch_pct[-1]:.0f}%", (len(doses)-1, ch_pct[-1]), textcoords="offset points",
+                xytext=(6, 4), fontsize=7, color="#2a78d6")
+    ax.annotate(f"{cm_pct[-1]:.0f}%", (len(doses)-1, cm_pct[-1]), textcoords="offset points",
+                xytext=(6, -12), fontsize=7, color="#7a4fa8")
+    ax.set_xticks(range(len(doses)))
+    ax.set_xticklabels([f"{d:g}" for d in doses], fontsize=7.5)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("% of no-perpetrator\nbaseline CV:PV")
+    ax.set_ylim(ylim)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    ax.set_title(title, fontsize=9)
+    ax.set_title(panel_letter, loc="left", fontweight="bold", x=-0.22)
+
+plot_ddi_panel(axD, dig_doses, ch_dig_pct, cm_dig_pct,
+                "Transporter inhibitor (digoxin-like)", "D", "Digoxin (µM)")
+plot_ddi_panel(axE, inh_doses, ch_inh_pct, cm_inh_pct,
+                "CYP inhibitor (ketoconazole-like)", "E", "CYP inhibitor (µM)")
+
+fig.text(0.5, 0.005,
+    "D, E share the same y-axis scale. Victim drug: transporter = flat, CYP = pericentral, fm = 0.5. "
+    "Signature (E reshapes spatial contrast more than D) held in 7/9 tested fm x zonation configurations (Figure 2B).",
+    ha="center", fontsize=7.5, color="#555", style="italic")
 
 fig.savefig(__file__.replace("make_figure1.py", "figure1.png"), dpi=300, bbox_inches="tight")
 print("saved")
