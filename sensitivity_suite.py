@@ -1,6 +1,6 @@
 """
 Robustness/sensitivity suite for the transporter-CYP zonation model, built
-in response to peer review of Transporter_CYP_Zonation_BDD_DRAFT.docx.
+in response to peer review of the manuscript.
 
 Addresses:
   (1) whether metabolite-tracks-CYP is an emergent or structural result
@@ -9,15 +9,15 @@ Addresses:
   (3) whether the transporter-inhibitor-vs-CYP-inhibitor DDI signature is
       robust across fm and zonation configurations, not just one case
   (4) whether CV:PV contrasts survive coarse spatial averaging (3-zone
-      readout instead of 24-compartment)
+      readout instead of 15-compartment)
 
 Numpy-vectorized (compartments), explicit Euler in time (matches the
-manuscript's validated numerics; dt/t_end taken from model2.py's
+manuscript's validated numerics; dt/t_end taken from model.py's
 convergence-checked defaults, re-checked below for the new kefm(x) case).
 """
 import numpy as np
 
-N = 24
+N = 15  # anatomically-grounded (see model.py docstring); was 24
 xs = np.array([(i + 0.5) / N for i in range(N)])
 
 KM = 8.2

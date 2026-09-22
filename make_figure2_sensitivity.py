@@ -26,7 +26,7 @@ axA.axhline(0, color="#333", lw=0.8)
 axA.legend(fontsize=6.8, frameon=False, loc="upper right")
 axA.spines[['top','right']].set_visible(False)
 axA.set_title("A", loc="left", fontweight="bold", x=-0.16)
-axA.text(0.02, 0.03, "rank order preserved;\nmagnitude shifts up to ~180-fold",
+axA.text(0.02, 0.03, "rank order preserved;\nmagnitude shifts up to ~270-fold",
          transform=axA.transAxes, fontsize=6.8, color="#666", style="italic")
 
 # ---------------- Panel B: DDI signature robustness across fm/configs ----------------
@@ -43,6 +43,7 @@ for i,(tr,cy) in enumerate(configs):
         dc_shape = abs(100*cv_pv(rc["Ch"])/base_cvpv - 100)
         grid[i,j] = 1.0 if dc_shape > dt_shape else 0.0
 
+n_hold = int(grid.sum())
 im = axB.imshow(grid, cmap="RdYlGn", vmin=0, vmax=1, aspect="equal")
 for i in range(3):
     for j in range(3):
@@ -51,8 +52,9 @@ axB.set_xticks(range(3)); axB.set_xticklabels([f"fm={f}" for f in fms])
 axB.set_yticks(range(3)); axB.set_yticklabels([f"{tr}\n{cy}" for tr,cy in configs], fontsize=7.5)
 axB.set_title("B", loc="left", fontweight="bold", x=-0.30)
 axB.set_xlabel("metabolic fraction")
-axB.text(0.5, -0.28, "DDI-locus signature (CYP-inhib. reshapes\nspatial contrast more than transporter-inhib.):\nholds in 7/9 tested configurations",
+axB.text(0.5, -0.28, f"DDI-locus signature (CYP-inhib. reshapes\nspatial contrast more than transporter-inhib.):\nholds in {n_hold}/9 tested configurations",
          transform=axB.transAxes, fontsize=6.8, color="#666", ha="center", style="italic")
+print(f"DDI signature holds in {n_hold}/9 configurations")
 
 # ---------------- Panel C: spatial-averaging / detectability ----------------
 data = []
@@ -67,13 +69,13 @@ lims = [min(np.log10(data[:,[0,2]]).min(), np.log10(data[:,[1,3]]).min())-0.3,
         max(np.log10(data[:,[0,2]]).max(), np.log10(data[:,[1,3]]).max())+0.3]
 axC.plot(lims, lims, color="#999", lw=1, ls="--")
 axC.set_xlim(lims); axC.set_ylim(lims)
-axC.set_xlabel("log$_{10}$(CV:PV), 24-compartment")
+axC.set_xlabel("log$_{10}$(CV:PV), 15-compartment")
 axC.set_ylabel("log$_{10}$(CV:PV), 3-zone readout")
 axC.legend(fontsize=7.5, frameon=False, loc="upper left")
 axC.spines[['top','right']].set_visible(False)
 axC.set_title("C", loc="left", fontweight="bold", x=-0.20)
 axC.set_aspect("equal")
 
-fig.suptitle("Figure S1. Robustness checks requested in review", fontsize=11, y=1.03)
-fig.savefig("figure2_sensitivity.png", dpi=300, bbox_inches="tight")
+fig.suptitle("Figure 2. Robustness checks", fontsize=11, y=1.03)
+fig.savefig(__file__.replace("make_figure2_sensitivity.py", "figure2_sensitivity.png"), dpi=300, bbox_inches="tight")
 print("saved")

@@ -1,28 +1,33 @@
 """
-Extended lobule model: Oatp1a4-type transporter zonation + CYP metabolic
-zonation, for the transporter+CYP DDI follow-up paper.
+Extended lobule model: transporter zonation + CYP metabolic zonation, for a
+joint transporter-CYP hepatic DDI model.
 
-24 compartments PV(1) -> CV(N), same blood-flow/transport backbone as the
-Oatp1a4 zonation model, with an added metabolic sink in each hepatocyte
-compartment producing a tracked metabolite pool.
+N compartments PV(1) -> CV(N), a sinusoidal blood-flow/transport backbone
+with an added metabolic sink in each hepatocyte compartment producing a
+tracked metabolite pool.
 
-Pure Python, no dependencies (fast enough at N=24, dt~1e-3, t~20 with
-explicit Euler -- ~1-2s per run).
+N=15: Ruijter et al. (2004, Hepatology 39:343-352) directly report 13-15
+cells along the centroportal (PV->CV) axis in rat liver, via stereological
+mapping (compare 16-18 in human, 9-10 in mouse); N=15 sits at the top of
+that reported range. Supersedes an earlier N=24, an uncited round-number
+discretization used in an earlier draft of this model.
+
+Pure Python, no dependencies (fast, dt~1e-3, t~20 with explicit Euler).
 """
 
-N = 24
+N = 15
 xs = [(i + 0.5) / N for i in range(N)]
 
-# ---- shared / transporter parameters (identical to paper 1) ----
-KM = 8.2        # uM, Oatp1a4 Km (Akanuma et al. 2019)
+# ---- shared / transporter parameters ----
+KM = 8.2        # uM, Oatp1a4-type transporter Km (Akanuma et al. 2019)
 KI = 0.3        # uM, digoxin (transporter inhibitor) Ki
 F = 8.0         # blood flow, a.u./min
 VB = 0.15       # fractional blood volume / compartment
 VH = 0.6        # fractional hepatocyte volume / compartment
 KEF = 0.8       # /min, reversible transporter efflux (hepatocyte -> blood)
-VMAX0 = 10.0    # total Oatp1a4 capacity, a.u.
+VMAX0 = 10.0    # total transporter capacity, a.u.
 
-# ---- new CYP / metabolism parameters ----
+# ---- CYP / metabolism parameters ----
 KM_CYP = 5.0    # uM, illustrative CYP Km
 KI_CYP = 0.5    # uM, illustrative CYP inhibitor (e.g. ketoconazole-like) Ki
 KEFM = 0.8      # /min, metabolite hepatocyte -> blood permeation (passive, one-way)

@@ -127,7 +127,7 @@ plot_ddi_panel(axE, inh_doses, ch_inh_pct, cm_inh_pct,
 
 fig.text(0.5, 0.005,
     "D, E share the same y-axis scale. Victim drug: transporter = flat, CYP = pericentral, fm = 0.5. "
-    "Signature (E reshapes spatial contrast more than D) held in 7/9 tested fm x zonation configurations (Figure 2B).",
+    "Signature (E reshapes spatial contrast more than D) held in 8/9 tested fm x zonation configurations (Figure 2B).",
     ha="center", fontsize=7.5, color="#555", style="italic")
 
 fig.savefig(__file__.replace("make_figure1.py", "figure1.png"), dpi=300, bbox_inches="tight")

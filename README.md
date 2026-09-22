@@ -5,16 +5,10 @@ independently zonated processes — an uptake transporter and a CYP-mediated
 metabolic sink — to predict spatial concentration profiles for a parent drug
 *and* its metabolite across the portal-vein-to-central-vein axis.
 
-**Companion code for:**
+**Code for:**
 > *Transporter and CYP Zonation Leave Separable Signatures on Parent Drug
 > versus Metabolite: A Minimal Hepatic Lobule Model* — submitted to
 > *Biopharmaceutics & Drug Disposition*.
-
-This model extends the transporter-only model in the companion repository
-[oatp1a4-zonation-simulator](https://github.com/hwe001/oatp1a4-zonation-simulator)
-(itself the companion tool for a Perspective on Oatp1a4 zonation, submitted to
-*CPT: Pharmacometrics & Systems Pharmacology*) by adding a second, saturable
-CYP metabolism flux and a tracked metabolite compartment.
 
 ## Why this exists
 
@@ -30,15 +24,17 @@ enzyme, without invasive regional sampling?
 
 ## What's in this repo
 
-- **`model.py`** — the model itself: a 24-compartment sinusoidal transport
-  model (PV → CV) with saturable transporter influx, reversible transporter
-  efflux, a saturable CYP metabolism sink, and a metabolite compartment.
-  Transporter and CYP capacity are each drawn independently from one of three
-  zonation shapes (pericentral, non-zonated/flat, periportal), giving nine
-  combinations. Two independent competitive-inhibition perpetrators (a
-  transporter inhibitor and a CYP inhibitor) can be simulated. Pure
-  dependency-free Python plus the standard library; run directly with
-  `python3 model.py` to print the baseline transporter×CYP zonation grid.
+- **`model.py`** — the model itself: a 15-compartment sinusoidal transport
+  model (PV → CV; compartment count set from Ruijter et al. 2004
+  stereological rat-liver data, see the docstring) with saturable transporter
+  influx, reversible transporter efflux, a saturable CYP metabolism sink, and
+  a metabolite compartment. Transporter and CYP capacity are each drawn
+  independently from one of three zonation shapes (pericentral, non-zonated/
+  flat, periportal), giving nine combinations. Two independent competitive-
+  inhibition perpetrators (a transporter inhibitor and a CYP inhibitor) can
+  be simulated. Pure dependency-free Python plus the standard library; run
+  directly with `python3 model.py` to print the baseline transporter×CYP
+  zonation grid.
 - **`make_figure1.py`** — generates the manuscript's Figure 1 (schematic,
   parent/metabolite CV:PV grids across all nine zonation combinations, and
   the transporter-inhibitor-vs-CYP-inhibitor DDI discrimination panels).
@@ -72,16 +68,16 @@ enzyme, without invasive regional sampling?
   suppresses the parent's spatial contrast even though the transporter
   itself remains sharply zonated.
 - **This model reaches a genuine, non-trivial steady state** under constant
-  portal inflow — unlike the transporter-only companion model, whose true
-  equilibrium is exactly flat for every hypothesis, because CYP metabolism
-  here is a real, irreversible sink.
+  portal inflow, because CYP metabolism here is a real, irreversible sink
+  rather than a purely reversible transporter-efflux process, which would
+  instead relax to a flat equilibrium for every zonation hypothesis.
 - **Transporter- and CYP-mediated DDIs leave distinguishable signatures in
-  most (7/9), but not all, tested configurations**: a transporter inhibitor
+  most (8/9), but not all, tested configurations**: a transporter inhibitor
   collapses total exposure while barely reshaping parent spatial contrast;
   a CYP inhibitor raises parent exposure and substantially reshapes its
-  spatial contrast. The two failure cases (fm = 0.8 flat/flat, fm = 0.2
-  pericentral/pericentral) have a mechanistic explanation in the manuscript
-  (Robustness checks) — both are near-misses, not reversals.
+  spatial contrast. The one failure case (fm = 0.2, pericentral/pericentral)
+  has a mechanistic explanation in the manuscript (Robustness checks) — a
+  near-miss, not a reversal.
 
 ## What's robust, and what isn't
 
@@ -93,9 +89,10 @@ on the specific illustrative parameter set:
   metabolite-tracks-CYP hold across a >10-fold sweep of fm, Km,cyp, kef, and
   flow; survive decoupling CYP capacity from kef entirely; survive
   coarse-graining to a 3-zone experimental readout; survive redefining the
-  CV:PV boundary width (n_edge = 1/3/5).
+  CV:PV boundary width (n_edge = 1/3/5); survive re-running at N = 24
+  compartments (the compartment count used in earlier drafts).
 - **Not robust (absolute magnitude):** metabolite CV:PV shifts by up to
-  ~363-fold depending on whether metabolite export is itself zonated — a
+  ~270-fold depending on whether metabolite export is itself zonated — a
   process this minimal model holds uniform by construction. Absolute
   metabolite gradients should not be over-interpreted quantitatively even
   where their direction is reliable.
@@ -108,10 +105,14 @@ values are chosen to be physiologically plausible, not fitted to a matched
 kinetic dataset for a specific drug — see the manuscript's Limitations
 section. All numerical results are dt-convergence-checked (explicit Euler,
 dt = 0.0025 min, verified against a 16-fold finer step at baseline and at
-every tested sensitivity-sweep extreme). A follow-up model, fitting real rat
-atorvastatin/cyclosporine kinetics, is in scoping — and was found to require
-a stiff ODE solver, since real transporter Vmax is far larger relative to
-flow than the illustrative values used here.
+every tested sensitivity-sweep extreme). A follow-up study, replacing these
+illustrative parameters with real rat atorvastatin/cyclosporine kinetics
+from two independent literature datasets, has since been completed; it
+found the qualitative parent-tracks-transporter/metabolite-tracks-CYP
+signature survives at real parameter scale (robust to parameter,
+compartment-count, and inhibition-mechanism uncertainty), and separately
+identified genuine numerical stiffness as a consequence of using real
+transporter kinetics rather than illustrative ones.
 
 ## License
 
